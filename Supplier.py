@@ -10,17 +10,11 @@ class Supplier:
         self.time = time
         self.price = price
         self.products = products
-        self.production_facilities = {}  # Список производственных установок, связанных с поставщиком
 
-    def add_production_facility(self, facility,order:{}):
-        if (key in self.products for key in order.keys()):
-            if facility in self.production_facilities.keys():
-                self.production_facilities[facility]+=order
-            else:
-                self.production_facilities.update({facility:order})
+
+    def SendProducts(self, order={}):
+        if (all(o in self.products.keys() for o in order.keys())):
+            return order
         else:
-            raise RuntimeError(f'Заказ неверен! {self.name}\n')
-
-    def remove_production_facility(self, facility):
-        if facility in self.production_facilities:
-            del self.production_facilities[facility]
+            return {}
+            print("Неправильный заказ! ")

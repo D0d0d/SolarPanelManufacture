@@ -20,7 +20,7 @@ class ProductionStage:
 class ProductionFacility:
 
 
-    def __init__(self, name:string, stage, production_time=0.0, workers=0):
+    def __init__(self, name:string, stage, production_time=0.0, workers=0, delievery_time=0.0, delievery_cost=0.0):
         '''
         :name name: название
         :param stage: этап производства
@@ -107,17 +107,19 @@ class ProductionFacility:
 
 
     def Produce(self):
-        while all(self.storage[key]-self.componetns[key]>=0 for key in self.componetns.keys()):
-            for key in self.componetns.keys():
-                self.storage[key]-=self.componetns[key]
-                for prod in self.production.keys():
-                    if prod in self.storage.keys():
-                        self.storage[prod]+=self.production[prod]
-                    else:
-                        self.storage.update({prod:self.production[prod]})
-            self.energy_used+=self.energy
-            self.time_used+=self.production_time
-        print(f"Ресурсы закончились! Выход производства: {self.storage}\n"
-              f"Затрачено {self.energy_used} энергии и {self.time_used} времени ")
-        self.production_time=0
-        self.time_used=0
+        try:
+            while all(self.storage[key]-self.componetns[key]>=0 for key in self.componetns.keys()):
+                for key in self.componetns.keys():
+                    self.storage[key]-=self.componetns[key]
+                    for prod in self.production.keys():
+                        if prod in self.storage.keys():
+                            self.storage[prod]+=self.production[prod]
+                        else:
+                            self.storage.update({prod:self.production[prod]})
+                self.energy_used+=self.energy
+                self.time_used+=self.production_time
+            print(f"Ресурсы закончились! Выход производства: {self.storage}\n"
+                  f"Затрачено {self.energy_used} энергии и {self.time_used} времени ")
+        except Exception as e:
+            print(f"Нет ресурсов!")
+
