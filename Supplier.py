@@ -12,9 +12,3 @@ class Supplier:
         self.products = products
 
 
-    def SendProducts(self, order={}):
-        if (all(o in self.products.keys() for o in order.keys())):
-            return order
-        else:
-            return {}
-            print("Неправильный заказ! ")

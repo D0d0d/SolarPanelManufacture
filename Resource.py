@@ -6,7 +6,7 @@
         self.amount = 0'''
 Resource = {
     "name":"",
-    "quality":"",
-    "cost":"",
-    "amount":""
+    "quality":0.0,
+    "cost":0.0,
+    "available":0
 }
