@@ -46,16 +46,9 @@ class ProductionFacility:
         self.available_workers = workers
         self.stage = stage
         self.isStart = 0
+
         print(f"Создана линия производства: {self.name}\n")
 
-    def SetDependencies(self, end):
-        self.isStart = 1
-        self.end = end
-
-    def SetDependencies(self, start, end):
-        self.isStart = 2
-        self.start = start
-        self.end = end
 
     def AddStage(self, stage):
         self.stages += stage
@@ -128,9 +121,9 @@ class ProductionFacility:
     def Produce(self):
         names = [i["name"] for i in self.components]
         quality = 1
-        while any([stored["amount"] - need["amount"] >= 0 for stored, need in
+        while any(stored["amount"] - need["amount"] >= 0 for stored, need in
                    zip([j for j in self.storage if j["name"] in names],
-                       [k for k in self.components if k["name"] in names])]):
+                       [k for k in self.components if k["name"] in names])):
             for need in self.components:
                 stored = next(i for i in self.storage if i["name"] == need["name"])
                 stored["amount"] -= need["amount"]
@@ -138,7 +131,6 @@ class ProductionFacility:
             for prod in self.production:
                 produced = copy(prod)
                 produced['quality']=min(quality, produced["quality"])
-                print(produced['quality'])
                 if produced["name"] in [i["name"] for i in self.storage]:
                     stored_prod = next(i for i in self.storage if i["name"] == produced["name"])
                     if (produced['quality']==stored_prod['quality']):
@@ -150,6 +142,11 @@ class ProductionFacility:
             self.energy_used += self.energy
             self.time_used += self.production_time
             self.storage = [i for i in self.storage if i["amount"] > 0]
-
-        print(f"Ресурсы закончились! Выход производства: {self.storage}\n"
-              f"Затрачено {self.energy_used} энергии и {self.time_used} времени ")
+        produce_result = {
+            "products":self.storage,
+            "energy":self.energy_used,
+            "time":self.time_used
+        }
+        return produce_result
+        #print(f"Ресурсы закончились! Выход производства: {self.storage}\n"
+              #f"Затрачено {self.energy_used} энергии и {self.time_used} времени ")

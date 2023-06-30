@@ -9,6 +9,7 @@ class ProductionModel:
         self.total_delievery = {'cost':0, 'time':0}
         self.total_time = 0
         self.total_cost = 0
+        self.produced =[]
 
     def order(self):
         try:
@@ -34,7 +35,7 @@ class ProductionModel:
                             recieve["amount"]+= take
                             available['amount']=0
                         else:
-                            take = comp["amount"]-recieve["amount"]
+                            take = comp["amount"]#-recieve["amount"]
                             receive['quality'] = (receive['amount']*recieve['quality']+take*available['quality'])/(take+receive["amount"])
                             recieve["amount"]+=take
                             available['amount']-=take
@@ -53,25 +54,49 @@ class ProductionModel:
                     self.storage.resources.append(rec)
         except:
             print("У продавца нет нужного ресурса!")
-    def delieve(self):
-        for fac in self.storage.production_facilities:
-            order = fac.components
 
+    def delieve(self):
+        for i,fac in enumerate(self.storage.production_facilities):
+            order = fac.components
             for comp in order:
+                #print(next(i for i in self.storage.resources if i['name']==comp['name']))
                 if (comp["name"] in [i["name"] for i in self.storage.resources]) and \
                         (next(i for i in self.storage.resources if i["name"]==comp["name"])["amount"]>=comp["amount"]):
-                        have = copy(next(i for i in self.storage.resources if i["name"]==comp["name"]))
-                        fac.UpdateStorage([have])
+                        have = next(i for i in self.storage.resources if i["name"]==comp["name"])
+                        send = copy(comp)
+                        send['quality']=have['quality']
+                        fac.UpdateStorage([send])
 
-                        have=copy(have)
-                        have["amount"]*=-1
+                        have["amount"]-=send['amount']
 
-                        self.storage.Update(copy([have]))
                 else:
-                    print('Недостаточно ресурсов для линии '+fac.name)
-                    break
-
+                    try:
+                        if  comp['name'] in [i['name'] for i in self.storage.production_facilities[i-1].production]:
+                            pass
+                        else:
+                            print('Недостаточно ресурсов для линии 1 ',fac.name, comp['name'] )
+                            break
+                    except:
+                        print('Недостаточно ресурсов для линии 2 ', fac.name)
+                        break
 
     def produce(self):
-        for facility in self.production_facilities:
-            facility.Produce()
+        amount_facilities = len(self.production_facilities)
+        cur=0
+        while cur<amount_facilities-1:
+            result = self.production_facilities[cur].Produce()
+            for res in result['products']:
+                if res['name'] in [i['name'] for i in self.production_facilities[cur+1].storage]:
+                    next(i for i in self.production_facilities[cur+1].storage if i['name']==res['name'])['amount']+=res['amount']
+                else:
+                    self.production_facilities[cur+1].storage.append(res)
+            cur+=1
+        final_stage = self.production_facilities[amount_facilities-1]
+        result = final_stage.Produce()
+        final_stage.storage=[]
+        for prod in result["products"]:
+            if prod['name'] in [i['name'] for i in self.produced]:
+                next(i for i in self.produced if i['name']==prod['name'])['amount']+=prod['amount']
+            else:
+                self.produced.append(copy(prod))
+        print(self.produced)

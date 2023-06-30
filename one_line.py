@@ -62,6 +62,8 @@ supplier1 = Supplier(name="Supplier1", time=5, price=5, products=needed)
 #region Инициализация склада
 Storage = Storage(max=50, workers=1)
 Storage.add_production_facility(Line1)
+
+
 #endregion
 
 model = ProductionModel([supplier1],Storage, [Line1])
@@ -69,7 +71,6 @@ model = ProductionModel([supplier1],Storage, [Line1])
 
 model.order()
 model.delieve()
-model.produce()
 model.order()
 model.delieve()
 model.produce()
