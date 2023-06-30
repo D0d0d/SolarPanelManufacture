@@ -6,6 +6,7 @@ from Supplier import Supplier
 from Model import ProductionModel
 from Storage import Storage
 
+repeat = 5
 components = [
                 {"name":"chip",     "price":[40,100],       "amount":60},   #кремниевые чипы
                 {"name":"glass",    "price":[400,600],      "amount":2},    #стекло
@@ -19,21 +20,21 @@ components = [
 
 pat =["chip","glass","contacts","wires","mounting","frame"]
 #region Инициализация этапов
-Assembly1 = ProductionStage(name="Assembly1", time=15, energy=10, production=[{"name":"pannel","amount": 1}],
+Assembly1 = ProductionStage(name="Assembly1", time=15, energy=10, production=[{"name":"pannel","amount": 1, "quality":1}],
                             components=[i for i in components if i['name'] in pat],
                             workers=4,
                             quality=True)
 
-Test1 = ProductionStage(name="Test1", time=10, energy=5, production=[{"name":"tested_pannel","amount":1}], components=[{"name":"pannel","amount": 1}], workers=2)
+Test1 = ProductionStage(name="Test1", time=10, energy=5, production=[{"name":"tested_pannel","amount":1, "quality":1}], components=[{"name":"pannel","amount": 1}], workers=2)
 
 pat =["film","box"]
-Package1 = ProductionStage(name="Package1", time=5, energy=1, production=[{"name":"packaged_product","amount": 1}],
+Package1 = ProductionStage(name="Package1", time=5, energy=1, production=[{"name":"packaged_product","amount": 1, "quality":1}],
                            components=[{"name":"tested_pannel","amount": 5}]
                            +[i for i in components if i['name'] in pat],
                            workers=1,
                             quality=True)
 
-Marking1 = ProductionStage(name="Marking1", time=5, energy=1, production=[{"name":"product","amount": 1}], components=[{"name":"packaged_product","amount": 1}],
+Marking1 = ProductionStage(name="Marking1", time=5, energy=1, production=[{"name":"product","amount": 1, "quality":1}], components=[{"name":"packaged_product","amount": 1}],
                            workers=1)
 #endregion
 #region Инициализация производственной линии
@@ -53,7 +54,7 @@ needed = [{'name': 'chip', 'price': [40, 100], 'amount': 960},
           {'name': 'box', 'price': [400, 4000], 'amount': 1}]
 
 for i in needed:
-    i["amount"]*=4
+    i["amount"]*=repeat
     i["quality"]=0.9
 #region Инициализация поставщика
 supplier1 = Supplier(name="Supplier1", time=5, price=5, products=needed)
@@ -65,10 +66,10 @@ Storage.add_production_facility(Line1)
 
 model = ProductionModel([supplier1],Storage, [Line1])
 
-model.order()
-model.order()
-model.order()
+
 model.order()
 model.delieve()
 model.produce()
-
+model.order()
+model.delieve()
+model.produce()

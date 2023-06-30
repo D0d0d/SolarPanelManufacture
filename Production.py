@@ -127,18 +127,26 @@ class ProductionFacility:
 
     def Produce(self):
         names = [i["name"] for i in self.components]
+        quality = 1
         while any([stored["amount"] - need["amount"] >= 0 for stored, need in
                    zip([j for j in self.storage if j["name"] in names],
                        [k for k in self.components if k["name"] in names])]):
             for need in self.components:
                 stored = next(i for i in self.storage if i["name"] == need["name"])
                 stored["amount"] -= need["amount"]
+                quality=min(quality,stored["quality"])
             for prod in self.production:
-                if prod["name"] in [i["name"] for i in self.storage]:
-                    stored_prod = next(i for i in self.storage if i["name"] == prod["name"])
-                    stored_prod["amount"] += prod["amount"]
+                produced = copy(prod)
+                produced['quality']=min(quality, produced["quality"])
+                print(produced['quality'])
+                if produced["name"] in [i["name"] for i in self.storage]:
+                    stored_prod = next(i for i in self.storage if i["name"] == produced["name"])
+                    if (produced['quality']==stored_prod['quality']):
+                        stored_prod["amount"] += produced["amount"]
+                    else:
+                        self.storage.append(produced)
                 else:
-                    self.storage.append(copy(prod))
+                    self.storage.append(copy(produced))
             self.energy_used += self.energy
             self.time_used += self.production_time
             self.storage = [i for i in self.storage if i["amount"] > 0]

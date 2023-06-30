@@ -51,7 +51,6 @@ class ProductionModel:
                     stored['amount']+=rec['amount']
                 else:
                     self.storage.resources.append(rec)
-            print(self.storage.resources)
         except:
             print("У продавца нет нужного ресурса!")
     def delieve(self):
