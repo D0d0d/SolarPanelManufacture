@@ -11,6 +11,7 @@ class ProductionModel:
         self.total_cost = 0
 
     def order(self):
+        try:
             sups = []
             received = []
             for fac in self.storage.production_facilities:
@@ -23,7 +24,7 @@ class ProductionModel:
                         if available["name"] not in [i["name"] for i in received]:
                             receive = copy(available)
                             receive['amount']=0
-                            received.append(receive)
+                            received.append(copy(receive))
                         recieve = next(i for i in received if i["name"]==comp["name"])
 
                         take = 0
@@ -50,7 +51,9 @@ class ProductionModel:
                     stored['amount']+=rec['amount']
                 else:
                     self.storage.resources.append(rec)
-
+            print(self.storage.resources)
+        except:
+            print("У продавца нет нужного ресурса!")
     def delieve(self):
         for fac in self.storage.production_facilities:
             order = fac.components

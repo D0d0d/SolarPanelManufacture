@@ -38,10 +38,11 @@ Marking1 = ProductionStage(name="Marking1", time=5, energy=1, production=[{"name
 #endregion
 #region Инициализация производственной линии
 Line1 = ProductionFacility(name="Line1", stage="first", workers=32)                                                            ############################
-Line1.AddStage([Assembly1,Assembly1,Assembly1,Assembly1,Assembly1, Test1,Test1,Test1,Test1,Test1, Package1, Marking1])
+Line1.AddStage([Assembly1, Test1, Package1, Marking1])
 Line1.BakeLine()
 
 #endregion
+
 needed = [{'name': 'chip', 'price': [40, 100], 'amount': 960},
           {'name': 'glass', 'price': [400, 600], 'amount': 32},
           {'name': 'contacts', 'price': [30, 60], 'amount': 800},
@@ -52,7 +53,7 @@ needed = [{'name': 'chip', 'price': [40, 100], 'amount': 960},
           {'name': 'box', 'price': [400, 4000], 'amount': 1}]
 
 for i in needed:
-    i["amount"]*=2
+    i["amount"]*=4
     i["quality"]=0.9
 #region Инициализация поставщика
 supplier1 = Supplier(name="Supplier1", time=5, price=5, products=needed)
@@ -65,9 +66,8 @@ Storage.add_production_facility(Line1)
 model = ProductionModel([supplier1],Storage, [Line1])
 
 model.order()
-model.delieve()
-
-
+model.order()
+model.order()
 model.order()
 model.delieve()
 model.produce()

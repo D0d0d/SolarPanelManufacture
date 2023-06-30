@@ -1,5 +1,5 @@
 import string
-from copy import copy
+from copy import copy, deepcopy
 
 
 class ProductionStage:
@@ -22,6 +22,8 @@ class ProductionStage:
 
 
 class ProductionFacility:
+    iter = 0
+
     def __init__(self, name: string, stage, production_time=0.0, workers=0, delievery_time=0.0, delievery_cost=0.0):
         '''
         :name name: название
@@ -59,47 +61,55 @@ class ProductionFacility:
         self.stages += stage
 
     def BakeLine(self):
-        {"name": "chip", "price": [40, 100], "amount": 60}
         self.workers = 0
         self.components = []
-
-        for stage in self.stages:
-            for needed in stage.components:
-                if any(i["name"] == needed["name"] for i in self.storage):
-                    stored = next(i for i in self.storage if i["name"] == needed["name"])
-                    if needed["amount"] > stored["amount"]:
-                        needed["amount"] -= stored["amount"]
-                        self.components.append(needed)
-                        stored["amount"] = 0
+        s=0
+        stages_count = len(self.stages)
+        while s<stages_count:
+            buf = True
+            stage = self.stages[s]
+            for comp in stage.components:
+                if comp['name'] in [i['name'] for i in self.production]:
+                    stored_production = next(i for i in self.production if i['name'] == comp['name'])
+                    if stored_production['amount'] > 0:
+                        stored_production['amount'] -= comp['amount']
+                        if stored_production['amount'] < 0:
+                            stored_production['amount'] += comp['amount']
+                            s -= 1
+                            buf=False
+                            break
                     else:
-                        stored["amount"] -= needed["amount"]
+                        s -= 1
+                        buf = False
+                        break
                 else:
-                    if any(i["name"] == needed["name"] for i in self.components):
-                        component = next(i for i in self.components if i["name"] == needed["name"])
-                        component["amount"] += needed["amount"]
+                    if comp['name'] in [i['name'] for i in self.components]:
+                        stored_comp = next(i for i in self.components if i['name'] == comp['name'])
+                        stored_comp['amount']+=comp['amount']
                     else:
-                        self.components.append(needed)
+                        self.components.append(copy(comp))
+            if buf:
+                for prod in stage.production:
+                    if prod['name'] in [i['name'] for i in self.production]:
+                        next(i for i in self.production if i['name']==prod['name'])['amount']+=prod['amount']
+                    else:
+                        self.production.append(copy(prod))
+                self.available_workers -= stage.workers
+                self.workers += stage.workers
+                self.production_time += stage.time
+                self.energy += stage.energy
+                s+=1
 
-            for product in stage.production:
-                if any(i["name"] == product["name"] for i in self.storage):
-                    existing = next(i for i in self.storage if i["name"] == product["name"])
-                    existing["amount"] += product["amount"]
-                else:
-                    self.storage.append(copy(product))
-            self.available_workers -= stage.workers
-            self.workers += stage.workers
-            self.production_time += stage.time
-            self.energy += stage.energy
 
-        if all(item["amount"] >= 0 for item in self.storage):
+        if all(prod['amount']>=0 for prod in self.production):
             self.Working = True
-            self.production = copy(self.storage)
             self.storage.clear()
             self.production = [i for i in self.production if i["amount"] > 0]
             print(f"Линия <<{self.name}>> собрана! \n")
         else:
             self.Working = False
             print(f"Линия <<{self.name}>> сломана! \n")
+
         print(
             f"Время производства: {self.production_time} \n"
             f"Необходимые компоненты: {self.components}\n"
@@ -116,8 +126,6 @@ class ProductionFacility:
                 self.storage.append(res)
 
     def Produce(self):
-        # try:
-
         names = [i["name"] for i in self.components]
         while any([stored["amount"] - need["amount"] >= 0 for stored, need in
                    zip([j for j in self.storage if j["name"] in names],
@@ -125,16 +133,15 @@ class ProductionFacility:
             for need in self.components:
                 stored = next(i for i in self.storage if i["name"] == need["name"])
                 stored["amount"] -= need["amount"]
-        for prod in self.production:
-            if prod["name"] in [i["name"] for i in self.storage]:
-                stored_prod = next(i for i in self.storage if i["name"] == prod["name"])
-                stored_prod["amount"] += prod["amount"]
-            else:
-                self.storage.append(prod)
+            for prod in self.production:
+                if prod["name"] in [i["name"] for i in self.storage]:
+                    stored_prod = next(i for i in self.storage if i["name"] == prod["name"])
+                    stored_prod["amount"] += prod["amount"]
+                else:
+                    self.storage.append(copy(prod))
             self.energy_used += self.energy
             self.time_used += self.production_time
             self.storage = [i for i in self.storage if i["amount"] > 0]
+
         print(f"Ресурсы закончились! Выход производства: {self.storage}\n"
               f"Затрачено {self.energy_used} энергии и {self.time_used} времени ")
-        # except Exception as e:
-        #    print(f"Нет ресурсов!")
