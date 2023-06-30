@@ -91,6 +91,7 @@ class ProductionModel:
                 else:
                     self.production_facilities[cur+1].storage.append(res)
             cur+=1
+        print("-----")
         final_stage = self.production_facilities[amount_facilities-1]
         result = final_stage.Produce()
         final_stage.storage=[]

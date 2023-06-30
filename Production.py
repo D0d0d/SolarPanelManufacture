@@ -148,5 +148,3 @@ class ProductionFacility:
             "time":self.time_used
         }
         return produce_result
-        #print(f"Ресурсы закончились! Выход производства: {self.storage}\n"
-              #f"Затрачено {self.energy_used} энергии и {self.time_used} времени ")
